@@ -1,0 +1,17 @@
+graph G {
+layout=neato;
+overlap=false;
+splines=false;
+sep=1.0;
+node [shape=circle, style=filled, fontname="Arial", fixedsize=true, width=1.2];
+edge [color=gray, penwidth=1.2];
+"t1" [label="t1 (R1)", fillcolor=lightgreen];
+"t3" [label="t3 (R1)", fillcolor=lightgreen];
+"d" [label="d (R2)", fillcolor=lightblue];
+"t2" [label="t2 (R1)", fillcolor=lightgreen];
+"c" [label="c (R3)", fillcolor=lightyellow];
+"d" -- "t1";
+"d" -- "t2";
+"c" -- "d";
+"c" -- "t1";
+}

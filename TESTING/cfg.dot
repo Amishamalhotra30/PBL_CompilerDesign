@@ -1,0 +1,14 @@
+digraph CFG {
+node [shape=box, style="filled,rounded", fontname="Arial"];
+edge [color=black, penwidth=1.5];
+label="Control Flow Graph";
+labelloc=top;
+fontsize=20;
+B0 [fillcolor=lightgreen, label="Block 0\nt1 = a + b\nt2 = t1 * c\nt3 = t2 + d\n"];
+subgraph cluster_legend {
+label="Legend";
+entry [label="Entry Block", style=filled, fillcolor=lightgreen];
+normal [label="Normal Block", style=filled, fillcolor=lightblue];
+exit [label="Exit Block", style=filled, fillcolor=lightpink];
+}
+}

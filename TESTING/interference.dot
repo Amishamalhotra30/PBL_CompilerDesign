@@ -1,0 +1,7 @@
+graph G {
+    node [shape=circle, style=filled, fillcolor=lightblue, fontname="Arial"];
+    edge [color=gray, penwidth=1.5];
+    layout=neato;
+    d -- t1;
+    c -- t1;
+}
