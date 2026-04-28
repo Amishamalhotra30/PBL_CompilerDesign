@@ -20,6 +20,7 @@ The system takes **Three Address Code (TAC)** as input and processes it through 
 ---
 
 
+
 ## 3. Features
 
 ### 3.1 Compiler Pipeline
