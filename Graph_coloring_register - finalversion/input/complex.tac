@@ -1,0 +1,9 @@
+t1 = a + b
+t2 = t1 * c
+if t2 < 20 goto L1
+t3 = t2 + d
+goto L2
+L1:
+t4 = t2 * e
+L2:
+t5 = t3 + t4

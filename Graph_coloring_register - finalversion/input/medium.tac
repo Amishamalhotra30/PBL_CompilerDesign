@@ -1,0 +1,14 @@
+t1 = a + b
+t2 = c + d
+t3 = t1 * t2
+t4 = e + f
+t5 = g + h
+t6 = t4 * t5
+t7 = t3 + t6
+t8 = i + j
+t9 = k + l
+t10 = t8 * t9
+t11 = t7 + t10
+t12 = m + n
+t13 = t11 * t12
+t14 = t13 + o

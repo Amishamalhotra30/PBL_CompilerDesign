@@ -1,0 +1,21 @@
+digraph CFG {
+node [shape=box, style="filled,rounded", fontname="Arial"];
+edge [color=black, penwidth=1.5];
+label="Control Flow Graph";
+labelloc=top;
+fontsize=20;
+B0 [fillcolor=lightgreen, label="Block 0\nt1 = a + b\nt2 = t1 * c\nif t2 < 50 goto L1\n"];
+B1 [fillcolor=lightblue, label="Block 1\nt3 = t2 + d\nt4 = t3 * e\nt5 = t4 + f\ngoto L2\n"];
+B2 [fillcolor=lightblue, label="Block 2\nL1:\nt6 = t2 * g\nt7 = t6 + h\nt8 = t7 * i\n"];
+B3 [fillcolor=lightpink, label="Block 3\nL2:\nt9 = t5 + t8\nt10 = t9 * j\nt11 = t10 + k\n"];
+B2 -> B3;
+B1 -> B3;
+B0 -> B2;
+B0 -> B1;
+subgraph cluster_legend {
+label="Legend";
+entry [label="Entry Block", style=filled, fillcolor=lightgreen];
+normal [label="Normal Block", style=filled, fillcolor=lightblue];
+exit [label="Exit Block", style=filled, fillcolor=lightpink];
+}
+}

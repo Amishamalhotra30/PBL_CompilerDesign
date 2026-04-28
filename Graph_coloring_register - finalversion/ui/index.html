@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Compiler Visualizer</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+
+        header {
+            background: #020617;
+            padding: 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            color: #38bdf8;
+        }
+
+        .container {
+            padding: 20px;
+        }
+
+        .controls {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        input, button {
+            padding: 10px;
+            margin: 10px;
+            border-radius: 5px;
+            border: none;
+        }
+
+        button {
+            background: #22c55e;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .status {
+            text-align: center;
+            margin-bottom: 15px;
+            color: #facc15;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: #020617;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        h2 {
+            color: #38bdf8;
+        }
+
+        img {
+            width: 100%;
+            border-radius: 10px;
+        }
+
+        pre {
+            background: black;
+            color: #00ff88;
+            padding: 15px;
+            border-radius: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .highlight {
+            color: #22c55e;
+            font-weight: bold;
+        }
+
+        .spill {
+            color: #ff4d4d;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1> Graph Coloring Register Allocation Visualizer</h1>
+</header>
+
+<div class="container">
+
+    <!-- Controls -->
+    <div class="controls">
+        <input type="file" id="fileInput">
+        <button onclick="runCompiler()">Run Compiler</button>
+    </div>
+
+    <div class="status" id="status">Idle</div>
+
+    <!-- CFG -->
+    <div class="card">
+        <h2>📊 Control Flow Graph</h2>
+        <img id="cfgImg">
+    </div>
+
+    <!-- Graphs -->
+    <div class="grid">
+        <div class="card">
+            <h2>🧠 Embedded System (4 Registers)</h2>
+            <img id="embeddedImg">
+        </div>
+
+        <div class="card">
+            <h2>💻 Desktop System (8 Registers)</h2>
+            <img id="desktopImg">
+        </div>
+    </div>
+
+    <!-- Comparison -->
+    <div class="card">
+        <h2>📊 Architecture Comparison</h2>
+        <div id="comparison"></div>
+    </div>
+
+    <!-- Spill Analysis -->
+    <div class="card">
+        <h2>🔥 Spill Analysis</h2>
+        <pre id="spillBox"></pre>
+    </div>
+
+    <!-- Spill Cost -->
+    <div class="card">
+        <h2>💰 Spill Cost Analysis</h2>
+        <pre id="spillCostBox"></pre>
+    </div>
+
+    <!-- Output -->
+    <div class="card">
+        <h2>💻 Compiler Output</h2>
+        <pre id="output"></pre>
+    </div>
+
+</div>
+
+<script>
+
+// 🔹 Extract numeric metrics
+function extractMetric(section, key) {
+    const regex = new RegExp(key + ":\\s*(\\d+)");
+    const match = section.match(regex);
+    return match ? match[1] : "N/A";
+}
+
+function runCompiler() {
+
+    const fileInput = document.getElementById("fileInput");
+    const status = document.getElementById("status");
+
+    if (fileInput.files.length === 0) {
+        alert("Select file first");
+        return;
+    }
+
+    status.innerText = "⏳ Running...";
+
+    const formData = new FormData();
+    formData.append("file", fileInput.files[0]);
+
+    fetch("/run", {
+        method: "POST",
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+
+        if (data.error) {
+            document.getElementById("output").innerText = data.error;
+            return;
+        }
+
+        const time = new Date().getTime();
+
+        // Images
+        document.getElementById("cfgImg").src = data.cfg + "?t=" + time;
+        document.getElementById("embeddedImg").src = data.embedded + "?t=" + time;
+        document.getElementById("desktopImg").src = data.desktop + "?t=" + time;
+
+        // Output
+        document.getElementById("output").innerText = data.output;
+
+        let output = data.output;
+
+        // Split architecture sections
+        let embedded = output.split("Architecture: Embedded")[1]
+                            .split("=============================")[0];
+
+        let desktop = output.split("Architecture: Desktop")[1];
+
+        // Extract metrics
+        let embSpills = extractMetric(embedded, "Spills Generated");
+        let deskSpills = extractMetric(desktop, "Spills Generated");
+
+        let embRegs = extractMetric(embedded, "Registers Available");
+        let deskRegs = extractMetric(desktop, "Registers Available");
+
+        let embPressure = extractMetric(embedded, "Maximum Register Pressure");
+        let deskPressure = extractMetric(desktop, "Maximum Register Pressure");
+
+        // Comparison text
+        let comparison = `
+Registers:
+Embedded: ${embRegs}
+Desktop: ${deskRegs}
+
+Spills:
+Embedded: ${embSpills}
+Desktop: ${deskSpills}
+
+Register Pressure:
+Embedded: ${embPressure}
+Desktop: ${deskPressure}
+
+Conclusion:
+${embSpills > deskSpills ? "🟢 Desktop better (fewer spills)" : "🟡 Similar"}
+        `;
+
+        document.getElementById("comparison").innerText = comparison;
+
+        // Spill list (unchanged)
+        if (data.spills && data.spills.length > 0) {
+            document.getElementById("spillBox").innerText =
+                "Total Spills: " + data.spills.length + "\n\n" +
+                data.spills.join("\n");
+        } else {
+            document.getElementById("spillBox").innerText = "No spills";
+        }
+
+        // ✅ FIXED SPILL COST (ONLY CHANGE)
+        if (data.spill_costs && data.spill_costs.length > 0) {
+
+            let text = "";
+
+            data.spill_costs.forEach(item => {
+                text += `${item.var} (cost=${item.cost})\n`;
+            });
+
+            document.getElementById("spillCostBox").innerText = text;
+
+        } else {
+            document.getElementById("spillCostBox").innerText =
+                "No spill cost data available";
+        }
+
+        status.innerText = "✅ Execution Complete";
+
+    })
+    .catch(err => {
+        document.getElementById("output").innerText = "Error occurred";
+        status.innerText = "❌ Failed";
+    });
+}
+
+</script>
+
+</body>
+</html>
